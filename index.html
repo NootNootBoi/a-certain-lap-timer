@@ -56,7 +56,7 @@
     color: var(--text);
     border: none;
     border-radius: 6px;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1.2rem;
     font-size: 1rem;
     cursor: pointer;
     transition: background 0.3s;
@@ -105,16 +105,15 @@
 <body>
   <div class="container">
     <h1>Lap Timer</h1>
-    <div class="timer" id="timer">00:00.00</div>
+    <div class="timer" id="timer">00:00</div>
 
     <div class="buttons">
-      <button id="startBtn">Start</button>
-      <button id="pauseBtn">Pause</button>
+      <button id="startPauseBtn">Start</button>
       <button id="lapBtn">Lap</button>
       <button id="resetBtn">Reset</button>
     </div>
 
-    <div class="info" id="avgLap">Average Lap: 00:00.00</div>
+    <div class="info" id="avgLap">Average Lap: 00:00</div>
 
     <div class="info">
       <label>Set Average Goal:</label><br>
@@ -122,9 +121,9 @@
       <input type="number" id="goalSec" min="0" max="59" value="0">sec
     </div>
 
-    <div class="info" id="nextReq">Next Required Lap: --:--.--</div>
+    <div class="info" id="nextReq">Next Required Lap: --:--</div>
     <div class="info" id="totalLaps">Total Laps: 0</div>
-    <div class="info" id="elapsed">Total Elapsed: 00:00.00</div>
+    <div class="info" id="elapsed">Total Elapsed: 00:00</div>
 
     <div class="laps" id="lapsList"></div>
   </div>
@@ -144,13 +143,13 @@ const elapsedEl = document.getElementById("elapsed");
 const lapsListEl = document.getElementById("lapsList");
 const goalMinEl = document.getElementById("goalMin");
 const goalSecEl = document.getElementById("goalSec");
+const startPauseBtn = document.getElementById("startPauseBtn");
 
 function formatTime(ms) {
-  let totalSeconds = ms / 1000;
+  let totalSeconds = Math.floor(ms / 1000);
   let minutes = Math.floor(totalSeconds / 60);
-  let seconds = Math.floor(totalSeconds % 60);
-  let hundredths = Math.floor((totalSeconds * 100) % 100);
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2,'0')}.${String(hundredths).padStart(2,'0')}`;
+  let seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2,'0')}`;
 }
 
 function updateTimerDisplay() {
@@ -159,18 +158,26 @@ function updateTimerDisplay() {
   timerEl.textContent = formatTime(diff);
 }
 
+function toggleStartPause() {
+  if (!running) {
+    startTimer();
+  } else {
+    pauseTimer();
+  }
+}
+
 function startTimer() {
-  if (running) return;
   running = true;
   startTime = Date.now();
-  timerInterval = setInterval(updateTimerDisplay, 10);
+  timerInterval = setInterval(updateTimerDisplay, 200);
+  startPauseBtn.textContent = "Pause";
 }
 
 function pauseTimer() {
-  if (!running) return;
   running = false;
   clearInterval(timerInterval);
   elapsedTime += Date.now() - startTime;
+  startPauseBtn.textContent = "Start";
 }
 
 function resetTimer() {
@@ -179,16 +186,18 @@ function resetTimer() {
   startTime = 0;
   elapsedTime = 0;
   laps = [];
+  timerEl.textContent = "00:00";
+  startPauseBtn.textContent = "Start";
   updateDisplays();
-  timerEl.textContent = "00:00.00";
 }
 
 function lapTimer() {
   if (!running) return;
   const now = Date.now();
   const total = now - startTime + elapsedTime;
-  const lastLapTime = laps.length ? total - laps.reduce((a,b)=>a+b,0) : total;
-  laps.unshift(lastLapTime);
+  const lastTotal = laps.reduce((a,b)=>a+b,0);
+  const lastLap = total - lastTotal;
+  laps.unshift(lastLap);
   updateDisplays();
 }
 
@@ -211,21 +220,19 @@ function updateDisplays() {
     const requiredNext = targetTotal - totalElapsed;
     nextReqEl.textContent = `Next Required Lap: ${requiredNext > 0 ? formatTime(requiredNext) : "Goal met!"}`;
   } else {
-    nextReqEl.textContent = `Next Required Lap: --:--.--`;
+    nextReqEl.textContent = `Next Required Lap: --:--`;
   }
 
-  // Laps List
+  // Laps List (latest first)
   lapsListEl.innerHTML = laps.map((lap, i) => `
     <div class="lap"><span>Lap ${laps.length - i}</span><span>${formatTime(lap)}</span></div>
   `).join("");
 }
 
-// Button listeners
-document.getElementById("startBtn").addEventListener("click", startTimer);
-document.getElementById("pauseBtn").addEventListener("click", pauseTimer);
+// Event listeners
+startPauseBtn.addEventListener("click", toggleStartPause);
 document.getElementById("resetBtn").addEventListener("click", resetTimer);
 document.getElementById("lapBtn").addEventListener("click", lapTimer);
-
 goalMinEl.addEventListener("input", updateDisplays);
 goalSecEl.addEventListener("input", updateDisplays);
 </script>
