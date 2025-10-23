@@ -5,169 +5,229 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lap Timer</title>
 <style>
+  :root {
+    --bg-dark: #37353E;
+    --bg-light: #44444E;
+    --accent: #715A5A;
+    --text: #D3DAD9;
+  }
+
   body {
-    background-color: #37353E;
-    color: #D3DAD9;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: "Segoe UI", sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text);
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    height: 100vh;
+    align-items: flex-start;
+    min-height: 100vh;
     margin: 0;
+    padding: 2rem;
   }
 
-  button, input {
-    background-color: #44444E;
-    color: #D3DAD9;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 6px;
-    margin: 6px;
-    font-size: 16px;
-  }
-
-  button:hover {
-    background-color: #715A5A;
-    cursor: pointer;
-  }
-
-  .timer-container {
-    background-color: #44444E;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    width: 320px;
-  }
-
-  .lap-info {
-    margin-top: 10px;
-    text-align: left;
-    font-size: 14px;
+  .container {
+    background-color: var(--bg-light);
+    border-radius: 10px;
+    padding: 2rem;
+    width: 400px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
   }
 
   h1 {
-    margin: 0;
-    font-size: 48px;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  .timer {
+    text-align: center;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1.5rem;
+  }
+
+  button {
+    background-color: var(--accent);
+    color: var(--text);
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  button:hover {
+    background-color: #8a7070;
+  }
+
+  .info {
+    text-align: center;
+    margin-bottom: 1rem;
   }
 
   input[type="number"] {
-    width: 80px;
+    width: 3rem;
+    padding: 0.3rem;
     text-align: center;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    color: var(--text);
+    margin: 0 0.2rem;
   }
 
-  .popout-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+  .laps {
+    background-color: var(--bg-dark);
+    border-radius: 8px;
+    padding: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .lap {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid #555;
+  }
+
+  .lap:last-child {
+    border-bottom: none;
   }
 </style>
 </head>
 <body>
-  <div class="timer-container">
-    <h1 id="display">00:00</h1>
-    <button id="startStopBtn">Start</button>
-    <button id="lapBtn" disabled>Lap</button>
-    <button id="resetBtn" disabled>Reset</button>
-    <div>
-      Target Avg (s): <input type="number" id="targetAvg" value="60">
+  <div class="container">
+    <h1>Lap Timer</h1>
+    <div class="timer" id="timer">00:00.00</div>
+
+    <div class="buttons">
+      <button id="startBtn">Start</button>
+      <button id="pauseBtn">Pause</button>
+      <button id="lapBtn">Lap</button>
+      <button id="resetBtn">Reset</button>
     </div>
-    <div class="lap-info">
-      <p><strong>Average Lap:</strong> <span id="avgLap">--</span></p>
-      <p><strong>Last 3 Laps:</strong> <span id="lastLaps">--</span></p>
-      <p><strong>Next Required Lap:</strong> <span id="requiredLap">--</span></p>
-      <p><strong>Total Laps:</strong> <span id="totalLaps">0</span></p>
+
+    <div class="info" id="avgLap">Average Lap: 00:00.00</div>
+
+    <div class="info">
+      <label>Set Average Goal:</label><br>
+      <input type="number" id="goalMin" min="0" value="0">min
+      <input type="number" id="goalSec" min="0" max="59" value="0">sec
     </div>
+
+    <div class="info" id="nextReq">Next Required Lap: --:--.--</div>
+    <div class="info" id="totalLaps">Total Laps: 0</div>
+    <div class="info" id="elapsed">Total Elapsed: 00:00.00</div>
+
+    <div class="laps" id="lapsList"></div>
   </div>
-  <button class="popout-btn" id="popoutBtn">Pop-Out Timer</button>
 
 <script>
-let startTime, timerInterval;
-let running = false;
+let startTime = 0;
+let elapsedTime = 0;
+let timerInterval;
 let laps = [];
-let lastLapTime = 0;
+let running = false;
 
-const display = document.getElementById('display');
-const avgLap = document.getElementById('avgLap');
-const lastLaps = document.getElementById('lastLaps');
-const requiredLap = document.getElementById('requiredLap');
-const totalLaps = document.getElementById('totalLaps');
-const targetAvg = document.getElementById('targetAvg');
-const startStopBtn = document.getElementById('startStopBtn');
-const lapBtn = document.getElementById('lapBtn');
-const resetBtn = document.getElementById('resetBtn');
-const popoutBtn = document.getElementById('popoutBtn');
+const timerEl = document.getElementById("timer");
+const avgLapEl = document.getElementById("avgLap");
+const nextReqEl = document.getElementById("nextReq");
+const totalLapsEl = document.getElementById("totalLaps");
+const elapsedEl = document.getElementById("elapsed");
+const lapsListEl = document.getElementById("lapsList");
+const goalMinEl = document.getElementById("goalMin");
+const goalSecEl = document.getElementById("goalSec");
 
-function updateDisplay() {
+function formatTime(ms) {
+  let totalSeconds = ms / 1000;
+  let minutes = Math.floor(totalSeconds / 60);
+  let seconds = Math.floor(totalSeconds % 60);
+  let hundredths = Math.floor((totalSeconds * 100) % 100);
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2,'0')}.${String(hundredths).padStart(2,'0')}`;
+}
+
+function updateTimerDisplay() {
   const now = Date.now();
-  const diff = now - startTime;
-  const seconds = Math.floor(diff / 1000);
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  display.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  const diff = now - startTime + elapsedTime;
+  timerEl.textContent = formatTime(diff);
 }
 
-function startStop() {
-  if (!running) {
-    running = true;
-    startStopBtn.textContent = 'Stop';
-    lapBtn.disabled = false;
-    resetBtn.disabled = false;
-    startTime = Date.now() - (lastLapTime || 0);
-    timerInterval = setInterval(updateDisplay, 100);
-  } else {
-    running = false;
-    startStopBtn.textContent = 'Start';
-    clearInterval(timerInterval);
-    lastLapTime = Date.now() - startTime;
-  }
+function startTimer() {
+  if (running) return;
+  running = true;
+  startTime = Date.now();
+  timerInterval = setInterval(updateTimerDisplay, 10);
 }
 
-function recordLap() {
-  const now = Date.now();
-  const lapTime = (now - startTime) / 1000;
-  startTime = now;
-  laps.push(lapTime);
-  updateStats();
-}
-
-function updateStats() {
-  if (laps.length > 0) {
-    const avg = laps.reduce((a,b)=>a+b,0) / laps.length;
-    avgLap.textContent = avg.toFixed(2) + 's';
-    lastLaps.textContent = laps.slice(-3).map(t=>t.toFixed(2)+'s').join(', ');
-    totalLaps.textContent = laps.length;
-    const goal = parseFloat(targetAvg.value);
-    const required = (goal * (laps.length + 1)) - laps.reduce((a,b)=>a+b,0);
-    requiredLap.textContent = required > 0 ? required.toFixed(2) + 's' : 'Goal Met';
-  }
+function pauseTimer() {
+  if (!running) return;
+  running = false;
+  clearInterval(timerInterval);
+  elapsedTime += Date.now() - startTime;
 }
 
 function resetTimer() {
-  clearInterval(timerInterval);
   running = false;
-  startStopBtn.textContent = 'Start';
+  clearInterval(timerInterval);
+  startTime = 0;
+  elapsedTime = 0;
   laps = [];
-  lastLapTime = 0;
-  display.textContent = '00:00';
-  avgLap.textContent = '--';
-  lastLaps.textContent = '--';
-  requiredLap.textContent = '--';
-  totalLaps.textContent = '0';
-  lapBtn.disabled = true;
-  resetBtn.disabled = true;
+  updateDisplays();
+  timerEl.textContent = "00:00.00";
 }
 
-function popOut() {
-  const pop = window.open('', 'LapTimer', 'width=350,height=400,alwaysOnTop=yes');
-  pop.document.write(document.documentElement.outerHTML);
-  pop.document.close();
+function lapTimer() {
+  if (!running) return;
+  const now = Date.now();
+  const total = now - startTime + elapsedTime;
+  const lastLapTime = laps.length ? total - laps.reduce((a,b)=>a+b,0) : total;
+  laps.unshift(lastLapTime);
+  updateDisplays();
 }
 
-startStopBtn.addEventListener('click', startStop);
-lapBtn.addEventListener('click', recordLap);
-resetBtn.addEventListener('click', resetTimer);
-popoutBtn.addEventListener('click', popOut);
+function updateDisplays() {
+  // Average Lap
+  let avg = laps.length ? laps.reduce((a,b)=>a+b,0)/laps.length : 0;
+  avgLapEl.textContent = `Average Lap: ${formatTime(avg)}`;
+
+  // Total Laps
+  totalLapsEl.textContent = `Total Laps: ${laps.length}`;
+
+  // Elapsed time
+  const totalElapsed = laps.reduce((a,b)=>a+b,0);
+  elapsedEl.textContent = `Total Elapsed: ${formatTime(totalElapsed)}`;
+
+  // Next Required Lap
+  const goalMs = (parseInt(goalMinEl.value)*60 + parseInt(goalSecEl.value)) * 1000;
+  if (goalMs > 0 && laps.length > 0) {
+    const targetTotal = goalMs * (laps.length + 1);
+    const requiredNext = targetTotal - totalElapsed;
+    nextReqEl.textContent = `Next Required Lap: ${requiredNext > 0 ? formatTime(requiredNext) : "Goal met!"}`;
+  } else {
+    nextReqEl.textContent = `Next Required Lap: --:--.--`;
+  }
+
+  // Laps List
+  lapsListEl.innerHTML = laps.map((lap, i) => `
+    <div class="lap"><span>Lap ${laps.length - i}</span><span>${formatTime(lap)}</span></div>
+  `).join("");
+}
+
+// Button listeners
+document.getElementById("startBtn").addEventListener("click", startTimer);
+document.getElementById("pauseBtn").addEventListener("click", pauseTimer);
+document.getElementById("resetBtn").addEventListener("click", resetTimer);
+document.getElementById("lapBtn").addEventListener("click", lapTimer);
+
+goalMinEl.addEventListener("input", updateDisplays);
+goalSecEl.addEventListener("input", updateDisplays);
 </script>
 </body>
 </html>
