@@ -1,240 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lap Timer</title>
-<style>
-  :root {
-    --bg-dark: #37353E;
-    --bg-light: #44444E;
-    --accent: #715A5A;
-    --text: #D3DAD9;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Timer</title>
+  <style>
+    body {
+      background-color: #37353E;
+      color: #D3DAD9;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-  body {
-    font-family: "Segoe UI", sans-serif;
-    background-color: var(--bg-dark);
-    color: var(--text);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    margin: 0;
-    padding: 2rem;
-  }
+    h1 {
+      margin-top: 20px;
+      color: #D3DAD9;
+    }
 
-  .container {
-    background-color: var(--bg-light);
-    border-radius: 10px;
-    padding: 2rem;
-    width: 400px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.3);
-  }
+    .container {
+      background-color: #44444E;
+      border-radius: 8px;
+      padding: 20px 30px;
+      margin-top: 20px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-  h1 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    font-weight: 500;
-  }
+    .display {
+      font-size: 2em;
+      text-align: center;
+      margin: 20px 0;
+      color: #D3DAD9;
+    }
 
-  .timer {
-    text-align: center;
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    letter-spacing: 2px;
-  }
+    .info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 15px;
+    }
 
-  .buttons {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 1.5rem;
-  }
+    input[type="number"] {
+      background-color: #715A5A;
+      border: none;
+      border-radius: 4px;
+      padding: 5px;
+      color: #D3DAD9;
+      width: 60px;
+      text-align: center;
+      font-size: 1em;
+      margin: 0 4px;
+    }
 
-  button {
-    background-color: var(--accent);
-    color: var(--text);
-    border: none;
-    border-radius: 6px;
-    padding: 0.6rem 1.2rem;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
+    button {
+      background-color: #715A5A;
+      color: #D3DAD9;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      margin: 5px;
+      transition: 0.2s ease;
+    }
 
-  button:hover {
-    background-color: #8a7070;
-  }
+    button:hover {
+      background-color: #D3DAD9;
+      color: #37353E;
+    }
 
-  .info {
-    text-align: center;
-    margin-bottom: 1rem;
-  }
+    .job-list {
+      margin-top: 20px;
+      background-color: #44444E;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      padding: 15px;
+      box-sizing: border-box;
+    }
 
-  input[type="number"] {
-    width: 3rem;
-    padding: 0.3rem;
-    text-align: center;
-    background-color: var(--bg-dark);
-    border: 1px solid var(--accent);
-    border-radius: 4px;
-    color: var(--text);
-    margin: 0 0.2rem;
-  }
+    .job-list h2 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: #D3DAD9;
+    }
 
-  .laps {
-    background-color: var(--bg-dark);
-    border-radius: 8px;
-    padding: 1rem;
-    max-height: 200px;
-    overflow-y: auto;
-  }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-  .lap {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.3rem 0;
-    border-bottom: 1px solid #555;
-  }
+    li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px;
+      border-bottom: 1px solid #715A5A;
+    }
 
-  .lap:last-child {
-    border-bottom: none;
-  }
-</style>
+    li:last-child {
+      border-bottom: none;
+    }
+
+    .highlight {
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
+  <h1>Job Timer</h1>
   <div class="container">
-    <h1>Lap Timer</h1>
-    <div class="timer" id="timer">00:00</div>
+    <button id="toggleBtn">Start</button>
 
-    <div class="buttons">
-      <button id="startPauseBtn">Start</button>
-      <button id="lapBtn">Lap</button>
-      <button id="resetBtn">Reset</button>
-    </div>
-
-    <div class="info" id="avgLap">Average Lap: 00:00</div>
+    <div class="display" id="currentTime">00:00:00</div>
 
     <div class="info">
-      <label>Set Average Goal:</label><br>
-      <input type="number" id="goalMin" min="0" value="0">min
-      <input type="number" id="goalSec" min="0" max="59" value="0">sec
+      <span>Jobs Done: <span id="jobCount">0</span></span>
+      <span>Avg Job Time: <span id="avgTime">00:00</span></span>
     </div>
 
-    <div class="info" id="nextReq">Next Required Lap: --:--</div>
-    <div class="info" id="totalLaps">Total Laps: 0</div>
-    <div class="info" id="elapsed">Total Elapsed: 00:00</div>
+    <div class="info">
+      <span>Goal Avg:</span>
+      <div>
+        <input type="number" id="goalMin" placeholder="mm" min="0" /> :
+        <input type="number" id="goalSec" placeholder="ss" min="0" max="59" />
+      </div>
+    </div>
 
-    <div class="laps" id="lapsList"></div>
+    <div class="info">
+      <span>Next Avg Target:</span>
+      <span id="nextAvg">--:--</span>
+    </div>
+
+    <div class="info">
+      <span>Remaining to Goal:</span>
+      <span id="remaining">--:--</span>
+    </div>
+
+    <div class="info">
+      <span>Total Elapsed:</span>
+      <span id="totalElapsed">00:00:00</span>
+    </div>
+
+    <div style="text-align:center;">
+      <button id="submitBtn">Submit Job</button>
+    </div>
   </div>
 
-<script>
-let startTime = 0;
-let elapsedTime = 0;
-let timerInterval;
-let laps = [];
-let running = false;
+  <div class="job-list">
+    <h2>Job History</h2>
+    <ul id="jobList"></ul>
+  </div>
 
-const timerEl = document.getElementById("timer");
-const avgLapEl = document.getElementById("avgLap");
-const nextReqEl = document.getElementById("nextReq");
-const totalLapsEl = document.getElementById("totalLaps");
-const elapsedEl = document.getElementById("elapsed");
-const lapsListEl = document.getElementById("lapsList");
-const goalMinEl = document.getElementById("goalMin");
-const goalSecEl = document.getElementById("goalSec");
-const startPauseBtn = document.getElementById("startPauseBtn");
+  <script>
+    let timerInterval;
+    let secondsElapsed = 0;
+    let totalSecondsElapsed = 0;
+    let jobTimes = [];
+    let running = false;
+    let totalTimerStarted = false;
+    let totalStartTime = 0;
 
-function formatTime(ms) {
-  let totalSeconds = Math.floor(ms / 1000);
-  let minutes = Math.floor(totalSeconds / 60);
-  let seconds = totalSeconds % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2,'0')}`;
-}
+    const currentTime = document.getElementById('currentTime');
+    const jobCount = document.getElementById('jobCount');
+    const avgTime = document.getElementById('avgTime');
+    const nextAvg = document.getElementById('nextAvg');
+    const remaining = document.getElementById('remaining');
+    const totalElapsed = document.getElementById('totalElapsed');
+    const jobList = document.getElementById('jobList');
+    const goalMin = document.getElementById('goalMin');
+    const goalSec = document.getElementById('goalSec');
+    const toggleBtn = document.getElementById('toggleBtn');
 
-function updateTimerDisplay() {
-  const now = Date.now();
-  const diff = now - startTime + elapsedTime;
-  timerEl.textContent = formatTime(diff);
-}
+    function formatHMS(sec) {
+      const sign = sec < 0 ? "-" : "";
+      sec = Math.abs(sec);
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      return `${sign}${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
 
-function toggleStartPause() {
-  if (!running) {
-    startTimer();
-  } else {
-    pauseTimer();
-  }
-}
+    function formatMS(sec) {
+      const sign = sec < 0 ? "-" : "";
+      sec = Math.abs(sec);
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${sign}${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
 
-function startTimer() {
-  running = true;
-  startTime = Date.now();
-  timerInterval = setInterval(updateTimerDisplay, 200);
-  startPauseBtn.textContent = "Pause";
-}
+    function parseGoal() {
+      const m = parseInt(goalMin.value) || 0;
+      const s = parseInt(goalSec.value) || 0;
+      return m * 60 + s;
+    }
 
-function pauseTimer() {
-  running = false;
-  clearInterval(timerInterval);
-  elapsedTime += Date.now() - startTime;
-  startPauseBtn.textContent = "Start";
-}
+    function updateDisplay() {
+      currentTime.textContent = formatHMS(secondsElapsed);
+      updateTotalElapsed();
+      updateGoalInfo();
+    }
 
-function resetTimer() {
-  running = false;
-  clearInterval(timerInterval);
-  startTime = 0;
-  elapsedTime = 0;
-  laps = [];
-  timerEl.textContent = "00:00";
-  startPauseBtn.textContent = "Start";
-  updateDisplays();
-}
+    function startTimer() {
+      if (timerInterval) return;
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        updateDisplay();
+      }, 1000);
 
-function lapTimer() {
-  if (!running) return;
-  const now = Date.now();
-  const total = now - startTime + elapsedTime;
-  const lastTotal = laps.reduce((a,b)=>a+b,0);
-  const lastLap = total - lastTotal;
-  laps.unshift(lastLap);
-  updateDisplays();
-}
+      if (!totalTimerStarted) {
+        totalStartTime = Date.now();
+        totalTimerStarted = true;
+      }
+    }
 
-function updateDisplays() {
-  // Average Lap
-  let avg = laps.length ? laps.reduce((a,b)=>a+b,0)/laps.length : 0;
-  avgLapEl.textContent = `Average Lap: ${formatTime(avg)}`;
+    function stopTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
 
-  // Total Laps
-  totalLapsEl.textContent = `Total Laps: ${laps.length}`;
+    function toggleTimer() {
+      if (!running) {
+        startTimer();
+        toggleBtn.textContent = "Stop";
+        running = true;
+      } else {
+        stopTimer();
+        secondsElapsed = 0;
+        totalTimerStarted = false;
+        totalSecondsElapsed = 0;
+        totalElapsed.textContent = "00:00:00";
+        toggleBtn.textContent = "Start";
+        running = false;
+      }
+    }
 
-  // Elapsed time
-  const totalElapsed = laps.reduce((a,b)=>a+b,0);
-  elapsedEl.textContent = `Total Elapsed: ${formatTime(totalElapsed)}`;
+    function calculateAverage() {
+      if (jobTimes.length === 0) return 0;
+      const total = jobTimes.reduce((a, b) => a + b, 0);
+      return Math.round(total / jobTimes.length);
+    }
 
-  // Next Required Lap
-  const goalMs = (parseInt(goalMinEl.value)*60 + parseInt(goalSecEl.value)) * 1000;
-  if (goalMs > 0 && laps.length > 0) {
-    const targetTotal = goalMs * (laps.length + 1);
-    const requiredNext = targetTotal - totalElapsed;
-    nextReqEl.textContent = `Next Required Lap: ${requiredNext > 0 ? formatTime(requiredNext) : "Goal met!"}`;
-  } else {
-    nextReqEl.textContent = `Next Required Lap: --:--`;
-  }
+    function updateGoalInfo() {
+      const goalSec = parseGoal();
+      if (goalSec <= 0) {
+        nextAvg.textContent = '--:--';
+        remaining.textContent = '--:--';
+        return;
+      }
 
-  // Laps List (latest first)
-  lapsListEl.innerHTML = laps.map((lap, i) => `
-    <div class="lap"><span>Lap ${laps.length - i}</span><span>${formatTime(lap)}</span></div>
-  `).join("");
-}
+      const avgSec = calculateAverage();
+      const n = jobTimes.length;
 
-// Event listeners
-startPauseBtn.addEventListener("click", toggleStartPause);
-document.getElementById("resetBtn").addEventListener("click", resetTimer);
-document.getElementById("lapBtn").addEventListener("click", lapTimer);
-goalMinEl.addEventListener("input", updateDisplays);
-goalSecEl.addEventListener("input", updateDisplays);
-</script>
+      if (n === 0) {
+        nextAvg.textContent = formatMS(goalSec);
+      } else {
+        const requiredNext = (goalSec * (n + 1)) - (avgSec * n);
+        nextAvg.textContent = formatMS(Math.round(requiredNext));
+      }
+
+      const remainingSec = parseMS(nextAvg.textContent) - secondsElapsed;
+      remaining.textContent = formatMS(remainingSec);
+    }
+
+    function updateTotalElapsed() {
+      if (totalTimerStarted) {
+        const diffSec = Math.floor((Date.now() - totalStartTime) / 1000);
+        totalElapsed.textContent = formatHMS(diffSec);
+      }
+    }
+
+    function parseMS(str) {
+      const [m, s] = str.split(':').map(Number);
+      return (m * 60) + s;
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      if (!running) return; // Only works while running
+      jobTimes.push(secondsElapsed);
+      const li = document.createElement('li');
+      li.innerHTML = `<span>Job ${jobTimes.length}</span><span>${formatHMS(secondsElapsed)}</span>`;
+      jobList.insertBefore(li, jobList.firstChild);
+
+      jobCount.textContent = jobTimes.length;
+      avgTime.textContent = formatMS(calculateAverage());
+      totalSecondsElapsed += secondsElapsed;
+
+      // Reset current job timer but keep running
+      secondsElapsed = 0;
+      updateDisplay();
+    });
+
+    toggleBtn.addEventListener('click', toggleTimer);
+    goalMin.addEventListener('input', updateGoalInfo);
+    goalSec.addEventListener('input', updateGoalInfo);
+
+    updateDisplay();
+  </script>
 </body>
 </html>
